@@ -1,0 +1,6 @@
+langchain_community
+numpy
+langchain 
+streamlit
+pathlib
+chromadb

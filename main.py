@@ -7,7 +7,7 @@ import numpy as np
 from langchain.memory import ConversationSummaryBufferMemory,ConversationBufferMemory, ConversationBufferWindowMemory
 from langchain.prompts import PromptTemplate
 from langchain.chains import create_retrieval_chain, RetrievalQA, ConversationalRetrievalChain, RetrievalQAWithSourcesChain
-import google.generativeai as genai
+
 from langchain_community.llms import HuggingFaceHub
 import gradio as gr
 

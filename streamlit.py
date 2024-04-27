@@ -67,7 +67,7 @@ def create_vectorstore(embeddings,documents,vectorstore_name):
     )
     return vector_store
 
-create_vectorstores = True # change to True to create vectorstores
+create_vectorstores = False # change to True to create vectorstores
 
 if create_vectorstores:
     vector_store_nomic = create_vectorstore(embeddings_nomic,documents,"vector_store_nomic")

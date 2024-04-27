@@ -209,5 +209,22 @@ def rag_model(query):
 
     return response
 
-iface = gr.Interface(fn=rag_model, inputs="text", outputs="text", title="RAG Model")
-iface.launch(share=True)
+
+#This is for Gradio interface
+# iface = gr.Interface(fn=rag_model, inputs="text", outputs="text", title="RAG Model")
+# iface.launch(share=True)
+
+
+#This is for Streamlit interface
+import streamlit as st
+
+st.title("RAG Model")
+
+# Text input box for user query
+query = st.text_input("Enter your query:")
+
+# Button to trigger model inference
+if st.button("Generate Response"):
+    # Call your RAG model function
+    response = rag_model(query)
+    st.write("Response:", response)

@@ -8,13 +8,11 @@ from langchain.memory import ConversationSummaryBufferMemory,ConversationBufferM
 from langchain.prompts import PromptTemplate
 from langchain.chains import create_retrieval_chain, RetrievalQA, ConversationalRetrievalChain, RetrievalQAWithSourcesChain
 import google.generativeai as genai
-
 from langchain_community.llms import HuggingFaceHub
 import gradio as gr
 
 
 LOCAL_VECTOR_STORE_DIR = Path('./data')
-GOOGLE_API_KEY = "AIzaSyDzH-2ryBkzhrWtKJ6NmBRLREpmLsf8FqE"
 
 
 def langchain_document_loader(TMP_DIR):
@@ -197,8 +195,6 @@ qa = RetrievalQA.from_chain_type(
         "memory": memory
     },
 )
-
-
 
 
 def rag_model(query):

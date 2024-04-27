@@ -199,7 +199,7 @@ def rag_model(query):
     result = qa({'query': query})
 
     # Extract the answer from the result
-    answer = result['result']
+    answer = result
 
     # Extract the response from the answer (if needed)
     response = answer.split('Assistant123:')[-1]

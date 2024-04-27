@@ -4,3 +4,4 @@ langchain
 streamlit
 pathlib
 chromadb
+gradio

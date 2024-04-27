@@ -4,4 +4,4 @@ langchain
 streamlit
 pathlib
 chromadb
-gradio
+docx2txt

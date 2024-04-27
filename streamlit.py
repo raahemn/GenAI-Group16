@@ -1,16 +1,13 @@
-from langchain_community.document_loaders import DirectoryLoader, TextLoader, PyPDFLoader, CSVLoader, Docx2txtLoader
+from langchain_community.document_loaders import DirectoryLoader, Docx2txtLoader
 from pathlib import Path
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.vectorstores import Chroma
-from itertools import combinations
-import numpy as np
-from langchain.memory import ConversationSummaryBufferMemory,ConversationBufferMemory, ConversationBufferWindowMemory
+from langchain.memory import  ConversationBufferWindowMemory
 from langchain.prompts import PromptTemplate
-from langchain.chains import create_retrieval_chain, RetrievalQA, ConversationalRetrievalChain, RetrievalQAWithSourcesChain
+from langchain.chains import  RetrievalQA
 
 from langchain_community.llms import HuggingFaceHub
 import streamlit as st
-
 
 
 LOCAL_VECTOR_STORE_DIR = Path('./data')
@@ -70,7 +67,7 @@ def create_vectorstore(embeddings,documents,vectorstore_name):
     )
     return vector_store
 
-create_vectorstores = False # change to True to create vectorstores
+create_vectorstores = True # change to True to create vectorstores
 
 if create_vectorstores:
     vector_store_nomic = create_vectorstore(embeddings_nomic,documents,"vector_store_nomic")
@@ -106,7 +103,6 @@ def Vectorstore_backed_retriever(vectorstore,search_type="similarity",k=4,score_
 
 # Similarity search
 retriever = Vectorstore_backed_retriever(vector_store_nomic,search_type="similarity",k=4)
-
 
 
 def instantiate_LLM(api_key,temperature=0.5,top_p=0.95,model_name=None):

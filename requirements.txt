@@ -6,4 +6,3 @@ pathlib
 chromadb
 streamlit==0.82.0
 docx2txt==0.8
-sqlite3>=3.35.0

@@ -187,6 +187,7 @@ Please follow the following rules:
 2. If you don't know the answer, don't try to make up an answer.
 3. If you don't have a course's review or outline, just say that you do not know about this course.
 4. If a user enters a course code (e.g. ECON100 or CS370), match it with reviews with that course code. If the user enters a course name (e.g. Introduction to Economics or Database Systems), match it with reviews with that course name.
+5. If you do not have information of a course, do not make up a course or suggest courses from universities other than LUMS.
 
 Context: {context}
 

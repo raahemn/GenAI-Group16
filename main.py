@@ -8,8 +8,13 @@ from langchain.memory import ConversationSummaryBufferMemory,ConversationBufferM
 from langchain.prompts import PromptTemplate
 from langchain.chains import create_retrieval_chain, RetrievalQA, ConversationalRetrievalChain, RetrievalQAWithSourcesChain
 
-from langchain_community.llms import HuggingFaceHub
+from langchain_community.llms import HuggingFaceHub, HuggingFaceEndpoint
 import gradio as gr
+
+import os
+from dotenv import load_dotenv
+# from llama.api import HuggingFaceEndpoint
+load_dotenv()
 
 
 LOCAL_VECTOR_STORE_DIR = Path('./data')
@@ -120,20 +125,33 @@ def instantiate_LLM(api_key,temperature=0.5,top_p=0.95,model_name=None):
     """
     
   
-    llm = HuggingFaceHub(
-        repo_id="mistralai/Mistral-7B-Instruct-v0.2", 
+    llm = HuggingFaceEndpoint(
+        repo_id="mistralai/Mistral-7B-Instruct-v0.2",          # working
+        # repo_id="apple/OpenELM-3B-Instruct",                 # erros: remote trust something
+        # repo_id="meta-llama/Meta-Llama-3-8B-Instruct",       # Takes too long
+        # repo_id="mistralai/Mixtral-8x22B-Instruct-v0.1",     # RAM insufficient
         # repo_id=model_name,
         huggingfacehub_api_token=api_key,
-        model_kwargs={
-            "temperature":temperature,
-            "top_p": top_p,
-            "do_sample": True,
-            "max_new_tokens":1024
-        },
+        # model_kwargs={
+        #     "temperature":temperature,
+        #     "top_p": top_p,
+        #     "do_sample": True,
+        #     "max_new_tokens":1024
+        # },
+        # model_kwargs={"stop": "Human:"},
+        
+        stop_sequences = ["Human:"],
+        temperature=temperature,
+        top_p=top_p,
+        do_sample=True,
+        max_new_tokens=1024,
+        trust_remote_code=True
     )
     return llm
 
-llm = instantiate_LLM(api_key="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")
+# get the API key from .env file
+HUGGING_FACE_API_KEY = os.getenv("HUGGING_FACE_API_KEY")
+llm = instantiate_LLM(api_key=HUGGING_FACE_API_KEY)
 
 
 
@@ -176,7 +194,7 @@ Chat History: {history}
 
 Human: {question}
 
-Assistant123:
+Assistant:
 """
 
 prompt = PromptTemplate(
@@ -197,6 +215,28 @@ qa = RetrievalQA.from_chain_type(
 )
 
 
+# def rag_model(query):
+#     # Your RAG model code here
+#     result = qa({'query': query})
+
+#     # Extract the answer from the result
+#     answer = result['result']
+
+#     # Extract the response from the answer (if needed)
+#     # response = answer.split('Assistant123:')[-1]
+
+#     # return response
+#     return answer
+
+
+# #This is for Gradio interface
+# iface = gr.Interface(fn=rag_model, inputs="text", outputs="text", title="RAGs to Riches", theme=gr.themes.Soft(), description="This is a RAG model that can answer queries based on the past reviews and course outlines of various courses offered at LUMS.")
+# iface.launch(share=True)
+
+
+# Global list to store chat history
+chat_history = []
+
 def rag_model(query):
     # Your RAG model code here
     result = qa({'query': query})
@@ -204,27 +244,28 @@ def rag_model(query):
     # Extract the answer from the result
     answer = result['result']
 
-    # Extract the response from the answer (if needed)
-    response = answer.split('Assistant123:')[-1]
+    # Append the query and answer to the chat history
+    chat_history.append(f'User: {query}\nAssistant: {answer}\n')
 
-    return response
+    # Join the chat history into a string
+    chat_string = '\n'.join(chat_history)
 
+    return chat_string
 
-#This is for Gradio interface
-# iface = gr.Interface(fn=rag_model, inputs="text", outputs="text", title="RAG Model")
-# iface.launch(share=True)
-
+# This is for Gradio interface
+iface = gr.Interface(fn=rag_model, inputs="text", outputs="text", title="RAGs to Riches", theme=gr.themes.Soft(), description="This is a RAG model that can answer queries based on the past reviews and course outlines of various courses offered at LUMS.")
+iface.launch(share=True)
 
 #This is for Streamlit interface
-import streamlit as st
+# import streamlit as st
 
-st.title("RAG Model")
+# st.title("RAG Model")
 
-# Text input box for user query
-query = st.text_input("Enter your query:")
+# # Text input box for user query
+# query = st.text_input("Enter your query:")
 
-# Button to trigger model inference
-if st.button("Generate Response"):
-    # Call your RAG model function
-    response = rag_model(query)
-    st.write("Response:", response)
+# # Button to trigger model inference
+# if st.button("Generate Response"):
+#     # Call your RAG model function
+#     response = rag_model(query)
+#     st.write("Response:", response)

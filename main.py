@@ -33,10 +33,10 @@ def langchain_document_loader(TMP_DIR):
     # )
     # documents.extend(txt_loader.load())
 
-    # pdf_loader = DirectoryLoader(
-    #     TMP_DIR.as_posix(), glob="**/*.pdf", loader_cls=PyPDFLoader, show_progress=True
-    # )
-    # documents.extend(pdf_loader.load())
+    pdf_loader = DirectoryLoader(
+        TMP_DIR.as_posix(), glob="**/*.pdf", loader_cls=PyPDFLoader, show_progress=True
+    )
+    documents.extend(pdf_loader.load())
 
     # csv_loader = DirectoryLoader(
     #     TMP_DIR.as_posix(), glob="**/*.csv", loader_cls=CSVLoader, show_progress=True,
@@ -74,13 +74,15 @@ def create_vectorstore(embeddings,documents,vectorstore_name):
     )
     return vector_store
 
-create_vectorstores = False # change to True to create vectorstores
+
+create_vectorstores = True # change to True to create vectorstores
 
 if create_vectorstores:
     vector_store_nomic = create_vectorstore(embeddings_nomic,documents,"vector_store_nomic")
     print("Vector store created")
     print("")
     
+
     
 vector_store_nomic = Chroma(persist_directory = LOCAL_VECTOR_STORE_DIR.as_posix() + "/vector_store_nomic", 
                             embedding_function=embeddings_nomic)

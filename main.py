@@ -75,7 +75,7 @@ def create_vectorstore(embeddings,documents,vectorstore_name):
     return vector_store
 
 
-create_vectorstores = True # change to True to create vectorstores
+create_vectorstores = False # change to True to create vectorstores
 
 if create_vectorstores:
     vector_store_nomic = create_vectorstore(embeddings_nomic,documents,"vector_store_nomic")
@@ -89,7 +89,7 @@ vector_store_nomic = Chroma(persist_directory = LOCAL_VECTOR_STORE_DIR.as_posix(
 print("vector_store_Ollama:",vector_store_nomic._collection.count(),"chunks.")
 
         
-def Vectorstore_backed_retriever(vectorstore,search_type="similarity",k=4,score_threshold=None):
+def Vectorstore_backed_retriever(vectorstore,search_type="mmr",k=6,score_threshold=None):
     """create a vectorsore-backed retriever
     Parameters: 
         search_type: Defines the type of search that the Retriever should perform.
@@ -111,7 +111,7 @@ def Vectorstore_backed_retriever(vectorstore,search_type="similarity",k=4,score_
 
 
 # Similarity search
-retriever = Vectorstore_backed_retriever(vector_store_nomic,search_type="similarity",k=4)
+retriever = Vectorstore_backed_retriever(vector_store_nomic,search_type="similarity",k=6)
 
 
 
@@ -128,7 +128,11 @@ def instantiate_LLM(api_key,temperature=0.5,top_p=0.95,model_name=None):
     
   
     llm = HuggingFaceEndpoint(
+        # repo_id = "openai-community/gpt2-large",
+        # repo_id = "google/gemma-2b-it", 
         repo_id="mistralai/Mistral-7B-Instruct-v0.2",          # working
+        # repo_id = "NexaAIDev/Octopus-v4",
+        # repo_id="Snowflake/snowflake-arctic-instruct",
         # repo_id="apple/OpenELM-3B-Instruct",                 # erros: remote trust something
         # repo_id="meta-llama/Meta-Llama-3-8B-Instruct",       # Takes too long
         # repo_id="mistralai/Mixtral-8x22B-Instruct-v0.1",     # RAM insufficient
@@ -140,7 +144,7 @@ def instantiate_LLM(api_key,temperature=0.5,top_p=0.95,model_name=None):
         #     "do_sample": True,
         #     "max_new_tokens":1024
         # },
-        # model_kwargs={"stop": "Human:"},
+        # model_kwargs={stop: "Human:", "stop_sequence": "Human:"},
         
         stop_sequences = ["Human:"],
         temperature=temperature,
@@ -157,11 +161,24 @@ llm = instantiate_LLM(api_key=HUGGING_FACE_API_KEY)
 
 
 
+# def create_memory():
+#     """Creates a ConversationSummaryBufferMemory for our model
+#     Creates a ConversationBufferWindowMemory for our models."""
+    
+#     memory = ConversationBufferWindowMemory(
+#         memory_key="history",
+#         input_key="question",
+#         return_messages=True,
+#         k=3
+#     )
+
+#     return memory
+
 def create_memory():
     """Creates a ConversationSummaryBufferMemory for our model
     Creates a ConversationBufferWindowMemory for our models."""
     
-    memory = ConversationBufferWindowMemory(
+    memory = ConversationBufferMemory(
         memory_key="history",
         input_key="question",
         return_messages=True,
@@ -240,12 +257,35 @@ qa = RetrievalQA.from_chain_type(
 # Global list to store chat history
 chat_history = []
 
+def print_documents(docs,search_with_score=False):
+    """helper function to print documents."""
+    if search_with_score:
+        # used for similarity_search_with_score
+        print(
+            f"\n{'-' * 100}\n".join(
+                [f"Document {i+1}:\n\n" + doc[0].page_content +"\n\nscore:"+str(round(doc[-1],3))+"\n" 
+                 for i, doc in enumerate(docs)]
+            )
+        )
+    else:
+        # used for similarity_search or max_marginal_relevance_search
+        print(
+            f"\n{'-' * 100}\n".join(
+                [f"Document {i+1}:\n\n" + doc.page_content 
+                 for i, doc in enumerate(docs)]
+            )
+        )  
+
 def rag_model(query):
     # Your RAG model code here
     result = qa({'query': query})
 
+    relevant_docs = retriever.get_relevant_documents(query)
+    print_documents(relevant_docs)
     # Extract the answer from the result
     answer = result['result']
+    # print(result)
+
 
     # Append the query and answer to the chat history
     chat_history.append(f'User: {query}\nAssistant: {answer}\n')
